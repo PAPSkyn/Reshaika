@@ -36,7 +36,7 @@ ul {
     background-repeat: no-repeat;
     background-size: cover;
     background-attachment: fixed;
-    background-position-y: -80px;
+    /* background-position-y: -80px; */
 }
 
 .body_main_info {
@@ -90,12 +90,13 @@ ul {
     padding-right: 50px;
 }
 
-.header .container {
+.container_header {
     display: flex;
     justify-content: space-between; 
     align-items: center; /*строит в линеечку*/
-    
+    width: 1080;
     gap: 20px;
+    padding: 0;
 }
 
 .header__list {
@@ -131,7 +132,7 @@ ul {
     background-repeat: no-repeat;
     background-size: cover;
     background-attachment: fixed;
-    background-position: 0 -80px;
+    /* background-position: 0 -80px; */
 }
 
 .main_variants {
