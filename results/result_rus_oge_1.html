@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edle" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Тестирование</title>
+    <link href="../style.css" rel="stylesheet" />
+</head>
+
+<body class="main_variants">
+    <header class="header">
+        <div class="container_header">
+            <a href="../index.html" class="main_html">Решайка</a>
+            <nav class="header__nav">
+                <ul class="header__list">
+                    <li><a class="header__link_d" href="#!">Открытый банк заданий</a></li>
+                    <li><a class="header__link" href="../info.html">Информация</a></li>
+                </ul>
+            </nav>
+            <a href="../index.html" class="btn">ВЕРНУТЬСЯ</a>
+        </div>
+    </header>
+    
+    <main class="main">
+        <selector class="select_var">
+            <h2 style="text-align: center; font-size: 40px;">Результаты 1 варианта ОГЭ по Русскому</h2>
+            <div id="moodDisplay" style="text-align: center; opacity: 0.7; font-size: 20px;"></div>
+
+            <div style="display: flex; justify-content: center; margin-top: 30px; gap: 50px; flex-wrap: wrap;">
+                <!-- Таблица тестовой части -->
+                <div style="flex: 1; max-width: 500px;">
+                    <h3 style="text-align: center; font-size: 25px;"><b>Тестовая часть</b></h3>
+                    <table id="testTable" style="border-collapse: collapse; width: 100%; margin-top: 10px;">
+                        <tr><th>№</th><th>Ваш ответ</th><th>Правильный ответ</th></tr>
+                    </table>
+                </div>
+
+                <!-- Таблица письменной части -->
+                <div style="flex: 1; max-width: 500px;">
+                    <h3 style="text-align: center; font-size: 25px;"><b>Письменная часть</b></h3>
+                    <table id="writtenTable" style="border-collapse: collapse; width: 100%; margin-top: 10px;">
+                        <tr><th>№</th><th>Ваш балл</th><th>Макс. балл</th></tr>
+                    </table>
+                </div>
+            </div>
+
+            <div id="summary" style="text-align: center; margin-top: 30px;"></div>  
+        </selector>
+    </main>
+    <div style="color: #ff4a4a;"></div>
+    <script>
+    (function() {
+        // ===== 1. Извлечение данных =====
+        const testAnswers = JSON.parse(localStorage.getItem('testAnswers') || '{}');
+        const writtenScores = JSON.parse(localStorage.getItem('writtenScores') || '{"izl":{},"soch":{}}');
+        const moodScore = localStorage.getItem('moodScore');
+
+        // ===== 2. Отображение настроения =====
+        const moodDisplay = document.getElementById('moodDisplay');
+        if (moodScore !== null) {
+            const moods = [
+                '0',
+                '1',
+                '2'
+            ];
+            moodDisplay.textContent = moods[parseInt(moodScore)] || '';
+        }
+
+        // ===== 3. Правильные ответы для тестовой части =====
+        const correctAnswers = {
+            2: "235",
+            3: "45",
+            4: "413",
+            5: "145",
+            6: "15",
+            7: "2689101112",
+            8: "полутораста",
+            9: "колодезноедно",
+            10: "235",
+            11: "14",
+            12: "заманчивой"
+        };
+
+        // ===== 4. Заполнение таблицы тестовой части =====
+        const testTable = document.getElementById('testTable');
+        let correctCount = 0;
+
+        for (let task = 2; task <= 12; task++) {
+            const userAnswer = (testAnswers[task] || '').trim();
+            const correctAnswer = correctAnswers[task] || '';
+            const isCorrect = userAnswer.toLowerCase().replace(/\s/g, '') === 
+                            correctAnswer.toLowerCase().replace(/\s/g, '');
+            if (isCorrect) correctCount++;
+
+            const row = testTable.insertRow();
+            row.insertCell().textContent = task;
+            const userCell = row.insertCell();
+            userCell.textContent = userAnswer;
+            userCell.style.backgroundColor = isCorrect ? '#4aff50' : '#ff4a4a'; // зелёный / красный
+            row.insertCell().textContent = correctAnswer;
+        }
+
+        // ===== 5. Заполнение таблицы письменной части =====
+        const writtenTable = document.getElementById('writtenTable');
+
+        // Максимальные баллы для изложения (задание 1)
+        const izlMax = { K1: 2, K2: 2, K3: 2 };
+        const izlScores = writtenScores.izl || {};
+        let izlUserTotal = 0;
+        for (let key in izlMax) {
+            izlUserTotal += (izlScores[key] !== undefined ? izlScores[key] : 0);
+        }
+        const izlMaxTotal = Object.values(izlMax).reduce((a,b)=>a+b, 0);
+
+        // Максимальные баллы для сочинения (задание 13)
+        const sochMax = { K1: 1, K2: 3, K3: 2, K4: 1, K5: 3, K6: 3, K7: 3, K8: 3, K9: 1 };
+        const sochScores = writtenScores.soch || {};
+        let sochUserTotal = 0;
+        for (let key in sochMax) {
+            sochUserTotal += (sochScores[key] !== undefined ? sochScores[key] : 0);
+        }
+        const sochMaxTotal = Object.values(sochMax).reduce((a,b)=>a+b, 0);
+
+        // Функция добавления строки
+        function addWrittenRow(taskName, userScore, maxScore) {
+            const row = writtenTable.insertRow();
+            row.insertCell().textContent = taskName;
+            row.insertCell().textContent = userScore;
+            row.insertCell().textContent = maxScore;
+            if (userScore === 0) {
+                row.style.backgroundColor = '#ff4a4a'; // красный
+            } else if (userScore < maxScore) {
+                row.style.backgroundColor = '#fff3cd'; // жёлтый
+            } else {
+                row.style.backgroundColor = '#4aff50'; // зелёный
+            }
+        }
+
+        addWrittenRow('1 (Изложение)', izlUserTotal, izlMaxTotal);
+        addWrittenRow('13 (Сочинение)', sochUserTotal, sochMaxTotal);
+
+        const totalWrittenUser = izlUserTotal + sochUserTotal;
+        const totalWrittenMax = izlMaxTotal + sochMaxTotal;
+
+        // ===== 6. Итоговая информация =====
+        document.getElementById('summary').innerHTML =
+            `<p>Тестовая часть: ${correctCount} из 11.</p>
+            <p>Развёрнутая часть: ${totalWrittenUser} из ${totalWrittenMax}.</p>`;
+
+    })();
+    </script>
+</body>
+</html>

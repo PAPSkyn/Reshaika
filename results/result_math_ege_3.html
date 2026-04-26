@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edle" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Результаты</title>
+    <link href="../style.css" rel="stylesheet" />
+</head>
+
+<body class="main_variants">
+    <header class="header">
+        <div class="container_header">
+            <a href="../index.html" class="main_html">Решайка</a>
+            <nav class="header__nav">
+                <ul class="header__list">
+                    <li><a class="header__link_d" href="#!">Открытый банк заданий</a></li>
+                    <li><a class="header__link" href="../info.html">Информация</a></li>
+                </ul>
+            </nav>
+
+            <a href="../index.html" class="btn">НА ГЛАВНУЮ</a>
+
+        </div>
+    </header>
+
+    <main class="main">
+        <selector class="select_var">
+            <div class="_result_oglavlenie" style="display: inline-table; text-align: center;">
+                <h1 style="margin-bottom: 10px;">Результаты 1 варианта ЕГЭ по базе математики</h1>
+                <div id="result_testik" style="margin-bottom: 10px; font-size: 24px; font-weight: bold; opacity: 0.5;"></div>
+            </div>
+            <div id="results-container"></div>
+        </selector>
+    </main>
+
+    <script>
+        const correctAnswers = {
+            "1": "44",
+            "2": "2413",
+            "3": "7",
+            "4": "3",
+            "5": "0,156",
+            "6": "2,5",
+            "7": "2341",
+            "8": "14",
+            "9": "1",
+            "10": "120",
+            "11": "184",
+            "12": "40",
+            "13": "4",
+            "14": "0,2",
+            "15": "11000",
+            "16": "-3",
+            "17": "12,5",
+            "18": "2341",
+            "19": "578 или 587 или 758 или 785 или 857 или 875",
+            "20": "17",
+            "21": "16",
+        };
+
+        const alternativeAnswers = {
+            "19": ["578", "587", "758", "785", "857", "875"],
+        };
+
+        // Получаем ответы пользователя
+        const userAnswers = JSON.parse(localStorage.getItem('userAnswers') || '{}');
+
+        // получаем рузультат ПсхТст
+        const moodScore = localStorage.getItem('moodScore');
+        const resultDiv = document.getElementById('result_testik');
+        if (moodScore) {
+            resultDiv.textContent = `${moodScore}`;
+        } else {
+            resultDiv.textContent = 'Результат психологического теста не пройден.';
+        }
+
+        function normalizeAnswer(str) {
+            if (!str) return '';
+            return str.trim().toLowerCase().replace(',', '.');
+        }
+
+        function isAnswerCorrect(taskNum, userAnswer, correctAnswer) {
+            if (!userAnswer) return false;
+
+            let normUser = normalizeAnswer(userAnswer);
+            let normCorrect = normalizeAnswer(correctAnswer);
+
+            // 1. Проверка по альтернативным вариантам
+            if (alternativeAnswers[taskNum]) {
+                const altNormalized = alternativeAnswers[taskNum].map(opt => normalizeAnswer(opt));
+                if (altNormalized.includes(normUser)) return true;
+            }
+
+            // 2. Проверка для заданий, где порядок не важен (например, комбинации цифр)
+            // if (unorderedTasks.includes(taskNum)) {
+            //     const sortStr = (s) => s.split('').sort().join('');
+            //     return sortStr(normUser) === sortStr(normCorrect);
+            // }
+
+            // 3. Обычное сравнение
+            return normUser === normCorrect;
+        }
+
+        function buildResultsTable() {
+            const container = document.getElementById('results-container');
+            if (!container) return;
+
+            let html = `<table class="results-table"><thead><tr>
+                <th>№ задания</th><th>Ваш ответ</th><th>Правильный ответ</th>
+            </tr></thead><tbody>`;
+
+            // Проходим по всем номерам заданий, которые есть в correctAnswers
+            for (let taskNum in correctAnswers) {
+                const userAns = userAnswers[taskNum] || '—';
+                const correctAns = correctAnswers[taskNum];
+                // const cellClass = (userAns === correctAns) ? 'correct' : 'incorrect';
+                const isCorrect = isAnswerCorrect(taskNum, userAns, correctAns);
+                const cellClass = isCorrect ? 'correct' : 'incorrect';
+
+                html += `<tr>
+                    <td>${taskNum}</td>
+                    <td class="${cellClass}">${userAns}</td>
+                    <td>${correctAns}</td>
+                </tr>`;
+            }
+
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+        }
+        // Вызываем построение таблицы после загрузки страницы
+        window.addEventListener('DOMContentLoaded', buildResultsTable);
+
+        localStorage.clear();
+    </script>
+</body>
+</html>
